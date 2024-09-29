@@ -1,43 +1,76 @@
-# Simple Web Application
+# Docker Command Summary and Practical Guide
 
-This is a simple web application using [Python Flask](http://flask.pocoo.org/) and [MySQL](https://www.mysql.com/) database. 
-This is used in the demonstration of the development of Ansible Playbooks.
-  
-  Below are the steps required to get this working on a base linux system.
-  
-  - **Install all required dependencies**
-  - **Install and Configure Web Server**
-  - **Start Web Server**
-   
-## 1. Install all required dependencies
-  
-  Python and its dependencies
+This document provides a summarized guide to the most essential Docker commands for container and image management, along with practical tips for effectively using Docker. It serves as a quick reference for performing Docker operations and setting up environments.
+
+## 1. Basic Container Management
+- **Run Containers:**
+  - `docker run <image_name>`: Start a container from an image.
+  - `docker run -d <image_name>`: Run the container in detached mode (background).
+  - `docker run -it <image_name> bash`: Run and start an interactive shell.
+  - `docker run -p <host_port>:<container_port> <image_name>`: Map ports between host and container.
+  - `docker run -v /host/path:/container/path <image_name>`: Mount a volume between host and container.
+
+- **Inspect & Logs:**
+  - `docker inspect <container_id>`: Inspect a container’s configuration and details.
+  - `docker logs <container_id>`: View logs of a container to debug issues.
+
+- **List & Remove Containers:**
+  - `docker ps`: List running containers.
+  - `docker ps -a`: List all containers (including stopped).
+  - `docker stop <container_name/id>`: Stop a running container.
+  - `docker rm <container_name/id>`: Remove a stopped container.
+
+- **Execute Commands in Running Containers:**
+  - `docker exec -it <container_name> <command>`: Run a command inside a running container.
+
+## 2. Image Management
+- **Pull & Run Images:**
+  - `docker pull <image_name>`: Pull an image from Docker Hub without running it.
+  - `docker images`: List available images locally.
+  - `docker rmi <image_name>`: Remove an image from local storage.
+
+- **Building Custom Images:**
+  - Create a `Dockerfile` specifying the image configuration.
+  - `docker build -t <image_tag> .`: Build an image from the current directory using a `Dockerfile`.
+  - `docker push <image_tag>`: Push a custom image to a Docker registry.
+
+## 3. Advanced Examples and Practical Tips
+
+### Create a Custom Web App Image
+1. Create a `Dockerfile` with the following content:
+    ```dockerfile
+    FROM ubuntu
+    RUN apt-get update
+    RUN apt-get install -y python python-pip
+    RUN pip install flask
+    COPY app.py /opt/app.py
+    ENTRYPOINT Flask_APP=app.py flask run --host=0.0.0.0
+    ```
+2. Build and run the Docker image:
+    ```bash
+    docker build -t my-simple-webapp .
+    docker run -d -p 8282:8080 my-simple-webapp
+    ```
+
+### Using ENV and CMD in Dockerfile
+1. Example `Dockerfile` with environment variables and commands:
+    ```dockerfile
+    FROM python:3.6-alpine
+    WORKDIR /app
+    COPY . /app
+    RUN pip install --no-cache-dir -r requirements.txt
+    EXPOSE 8080
+    ENV NAME WebAppColor
+    CMD ["python", "app.py"]
+    ```
+2. Build and run the Docker image:
+    ```bash
+    docker build -t webapp-color:lite .
+    docker run -d -p 8282:8080 webapp-color:lite
+    ```
+
+## 4. Practical Tips for Effective Docker Use
+- **Always Use Dockerfile for Consistency:** Creating a `Dockerfile` ensures that your image builds are reproducible and minimizes configuration errors.
+- **Use Named Volumes for Persistent Data:** Prevent data loss when containers are recreated using named volumes.
   ```bash
-  apt-get install -y python3 python3-setuptools python3-dev build-essential python3-pip default-libmysqlclient-dev
-  ```
-   
-## 2. Install and Configure Web Server
-
-Install Python Flask dependency
-```bash
-pip3 install flask
-pip3 install flask-mysql
-```
-
-- Copy `app.py` or download it from a source repository
-- Configure database credentials and parameters 
-
-## 3. Start Web Server
-
-Start web server
-```bash
-FLASK_APP=app.py flask run --host=0.0.0.0
-```
-
-## 4. Test
-
-Open a browser and go to URL
-```
-http://<IP>:5000                            => Welcome
-http://<IP>:5000/how%20are%20you            => I am good, how about you?
-```
+  docker run -v my_volume:/data my_image
