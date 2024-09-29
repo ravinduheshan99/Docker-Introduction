@@ -74,3 +74,34 @@ This document provides a summarized guide to the most essential Docker commands 
 - **Use Named Volumes for Persistent Data:** Prevent data loss when containers are recreated using named volumes.
   ```bash
   docker run -v my_volume:/data my_image
+
+## 5. Docker Networking & Port Mapping
+- Inspect Network Configuration
+  `docker network ls`: List all networks.
+  `docker network inspect <network_name>`: Get detailed network information.
+- Port Mapping:
+  Use `-p <host_port>:<container_port>` to map ports between host and container
+
+  ```bash
+  docker run -p 80:5000 <image_name>
+
+## 6. Dockerfile Best Practices
+- **Order Matters**: Place frequently changing instructions (e.g., COPY, RUN) towards the end of your Dockerfile to leverage Docker's caching mechanism.
+- **Minimize Layer Count**: Each instruction (e.g., RUN, COPY) creates a new layer in the image. Combine related commands to reduce the layer count.
+
+  ```bash
+  RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip
+
+- **Use Multi-Stage Builds**: For complex applications, consider using multi-stage builds to reduce the final image size:
+
+  ```bash
+  FROM golang:1.16 AS builder
+  WORKDIR /app
+  COPY . .
+  RUN go build -o main .
+
+  FROM alpine
+  COPY --from=builder /app/main /main
+  CMD ["/main"]
